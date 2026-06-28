@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { Spectral, Hanken_Grotesk } from 'next/font/google'
+import { Spectral, Schibsted_Grotesk, Space_Mono } from 'next/font/google'
 import './globals.css'
+import { BgVideo } from './components/BgVideo'
 
 const spectral = Spectral({
   variable: '--font-spectral',
@@ -9,9 +10,16 @@ const spectral = Spectral({
   style: ['normal', 'italic'],
 })
 
-const hanken = Hanken_Grotesk({
-  variable: '--font-hanken',
+const grotesk = Schibsted_Grotesk({
+  variable: '--font-grotesk',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+})
+
+const spaceMono = Space_Mono({
+  variable: '--font-mono-space',
+  subsets: ['latin'],
+  weight: ['400', '700'],
 })
 
 export const metadata: Metadata = {
@@ -31,8 +39,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${spectral.variable} ${hanken.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+    <html
+      lang="en"
+      className={`${spectral.variable} ${grotesk.variable} ${spaceMono.variable} h-full`}
+    >
+      <body className="min-h-full">
+        <BgVideo />
+        {children}
+      </body>
     </html>
   )
 }

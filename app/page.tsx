@@ -82,7 +82,8 @@ export default function Home() {
 function Intro({ onBegin }: { onBegin: () => void }) {
   return (
     <main className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
-      <p className="rise text-xs uppercase tracking-[0.32em] text-gold" style={{ animationDelay: '0ms' }}>
+      <p className="rise num flex items-center gap-2.5 text-xs uppercase tracking-[0.28em] text-gold" style={{ animationDelay: '0ms' }}>
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-magenta pulse-glow" />
         Mirror 03 · the reasoning instrument
       </p>
       <h1
@@ -129,9 +130,9 @@ function Intro({ onBegin }: { onBegin: () => void }) {
 
 function Glyph({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-xl border border-line bg-indigo-2/40 p-4">
-      <p className="font-display text-base text-gold">{title}</p>
-      <p className="mt-1 leading-snug text-ivory-faint">{body}</p>
+    <div className="group rounded-xl border border-line bg-indigo-2/40 p-4 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-gold/40 hover:bg-indigo-2/60">
+      <p className="font-display text-base italic text-gold">{title}</p>
+      <p className="mt-1 leading-snug text-ivory-faint transition group-hover:text-ivory-soft">{body}</p>
     </div>
   )
 }

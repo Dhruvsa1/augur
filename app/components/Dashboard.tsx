@@ -74,7 +74,7 @@ export function Dashboard({
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* headline verdict */}
-      <div className="rise rounded-2xl border border-line bg-indigo-2/55 p-6 md:p-8">
+      <div className="rise rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-6 md:p-8">
         <p className="text-xs uppercase tracking-[0.22em] text-gold">Your reading</p>
         <p className="mt-3 font-display text-2xl leading-snug text-ivory md:text-3xl">
           {headline(overall.bins)}
@@ -102,14 +102,14 @@ export function Dashboard({
 
       <div className="grid gap-6 md:grid-cols-[1.15fr_0.85fr]">
         {/* constellation */}
-        <div className="rise rounded-2xl border border-line bg-indigo-2/55 p-5" style={{ animationDelay: '80ms' }}>
+        <div className="rise rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-5" style={{ animationDelay: '80ms' }}>
           <h2 className="mb-3 font-display text-lg text-ivory">The constellation</h2>
           <ConstellationCurve bins={overall.bins} n={overall.n} />
         </div>
 
         {/* overconfidence gauge + brier trend */}
         <div className="rise space-y-6" style={{ animationDelay: '140ms' }}>
-          <div className="rounded-2xl border border-line bg-indigo-2/55 p-5">
+          <div className="rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-5">
             <h2 className="font-display text-lg text-ivory">Overconfidence index</h2>
             <Gauge value={overall.overconfidenceIndex} />
             <p className="mt-3 text-sm text-ivory-soft">
@@ -123,7 +123,7 @@ export function Dashboard({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-line bg-indigo-2/55 p-5">
+          <div className="rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-5">
             <h2 className="font-display text-lg text-ivory">Brier over time</h2>
             <BrierTrend series={brierOverTime} />
             <p className="mt-2 text-xs text-ivory-faint">Lower is better. Your running average.</p>
@@ -133,7 +133,7 @@ export function Dashboard({
 
       {/* by domain */}
       {byDomain.length > 0 && (
-        <div className="rise rounded-2xl border border-line bg-indigo-2/55 p-6" style={{ animationDelay: '200ms' }}>
+        <div className="rise rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-6" style={{ animationDelay: '200ms' }}>
           <h2 className="mb-4 font-display text-lg text-ivory">Where you bend</h2>
           <div className="space-y-3">
             {byDomain.map((d) => (
@@ -145,7 +145,7 @@ export function Dashboard({
 
       {/* interval coverage */}
       {intervals.n > 0 && (
-        <div className="rise rounded-2xl border border-line bg-indigo-2/55 p-6" style={{ animationDelay: '240ms' }}>
+        <div className="rise rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-6" style={{ animationDelay: '240ms' }}>
           <h2 className="mb-2 font-display text-lg text-ivory">Your 90% intervals</h2>
           <p className="text-sm text-ivory-soft">
             They contained the truth{' '}
@@ -162,7 +162,7 @@ export function Dashboard({
 
       {/* biggest surprises */}
       {surprises.length > 0 && (
-        <div className="rise rounded-2xl border border-line bg-indigo-2/55 p-6" style={{ animationDelay: '280ms' }}>
+        <div className="rise rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-6" style={{ animationDelay: '280ms' }}>
           <h2 className="mb-1 font-display text-lg text-ivory">Biggest surprises</h2>
           <p className="mb-4 text-xs text-ivory-faint">
             High-confidence misses — where certainty failed you most.
@@ -173,7 +173,7 @@ export function Dashboard({
                 key={i}
                 className="flex items-start gap-3 rounded-lg border border-line bg-indigo/40 p-3"
               >
-                <span className="mt-0.5 shrink-0 rounded-full bg-bad/15 px-2 py-0.5 text-xs font-medium text-bad">
+                <span className="num mt-0.5 shrink-0 rounded-full bg-bad/15 px-2 py-0.5 text-xs font-bold text-bad">
                   {s.confidence}%
                 </span>
                 <div className="min-w-0">
@@ -216,7 +216,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.16em] text-ivory-faint">{label}</p>
-      <p className="font-display text-2xl text-ivory tabular-nums">{value}</p>
+      <p className="num text-3xl font-bold text-ivory">{value}</p>
       {hint && <p className="text-[11px] text-ivory-faint">{hint}</p>}
     </div>
   )
@@ -285,7 +285,7 @@ function DomainRow({
           }}
         />
       </div>
-      <span className="w-24 shrink-0 text-right text-xs text-ivory-faint tabular-nums">
+      <span className="num w-24 shrink-0 text-right text-xs text-ivory-faint">
         {summary.n < 5 ? `${summary.n} ans` : `${over ? '+' : ''}${Math.round(idx * 100)} pts`}
       </span>
     </div>
@@ -294,7 +294,7 @@ function DomainRow({
 
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-2xl rounded-2xl border border-line bg-indigo-2/55 p-8 text-center">
+    <div className="mx-auto max-w-2xl rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-8 text-center">
       {children}
     </div>
   )

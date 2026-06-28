@@ -189,7 +189,7 @@ export function RangeMode({
             onClick={onSeeReading}
             className="text-xs text-magenta underline decoration-magenta/40 underline-offset-4 hover:text-ivory"
           >
-            {sessionCorrect}/{answeredThisSession} this session · see your reading →
+            <span className="num">{sessionCorrect}/{answeredThisSession}</span> this session · see your reading →
           </button>
         )}
       </div>
@@ -229,12 +229,12 @@ export function RangeMode({
           {/* progress */}
           <div className="mb-3 flex items-center justify-between text-xs text-ivory-faint">
             <span className="uppercase tracking-[0.18em] text-gold">{q.domain}</span>
-            <span>
+            <span className="num">
               {idx + 1} / {queue!.length} drawn
             </span>
           </div>
 
-          <div className="rounded-2xl border border-line bg-indigo-2/55 p-6 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+          <div className="rounded-2xl border border-line bg-indigo-2/70 p-6 backdrop-blur-md md:p-8 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)]">
             <p className="font-display text-2xl leading-snug text-ivory md:text-[28px]">
               {q.prompt}
             </p>
@@ -261,15 +261,20 @@ export function RangeMode({
 
                 <div className="mt-8">
                   <div className="flex items-end justify-between">
-                    <label
-                      htmlFor="conf"
-                      className="text-xs uppercase tracking-[0.18em] text-ivory-faint"
-                    >
-                      How sure are you?
-                    </label>
-                    <span className="font-display text-4xl text-gold tabular-nums">
+                    <div>
+                      <label
+                        htmlFor="conf"
+                        className="text-xs uppercase tracking-[0.18em] text-ivory-faint"
+                      >
+                        How sure are you?
+                      </label>
+                      <p className="mt-1 font-display text-base italic text-magenta">
+                        {confVerdict(confidence)}
+                      </p>
+                    </div>
+                    <span className="num text-5xl font-bold leading-none text-gold">
                       {confidence}
-                      <span className="text-xl text-gold-soft">%</span>
+                      <span className="text-2xl text-gold-soft">%</span>
                     </span>
                   </div>
                   <input
@@ -377,7 +382,7 @@ function RevealCard({ q, reveal }: { q: QuestionPublic; reveal: Reveal }) {
         <p className="font-display text-2xl" style={{ color: `var(--${tone})` }}>
           {correct ? 'Right.' : 'Wrong.'}
         </p>
-        <p className="text-xs text-ivory-faint">
+        <p className="num text-xs text-ivory-faint">
           Brier {reveal.brier.toFixed(2)} ·{' '}
           {q.kind === 'numeric' ? '90% interval' : `${reveal.confidence}% sure`}
         </p>
@@ -460,4 +465,12 @@ function Dots() {
 
 function formatNum(v: number): string {
   return Number.isInteger(v) ? v.toLocaleString() : v.toLocaleString(undefined, { maximumFractionDigits: 4 })
+}
+
+function confVerdict(c: number): string {
+  if (c <= 50) return 'a coin flip'
+  if (c < 65) return 'leaning'
+  if (c < 80) return 'fairly sure'
+  if (c < 95) return 'confident'
+  return 'near-certain'
 }

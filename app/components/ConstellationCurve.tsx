@@ -1,12 +1,15 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import type { CalibrationBin } from '@/lib/scoring'
 
 /**
  * The calibration curve as a constellation plot.
  * x = stated confidence (50–100), y = empirical accuracy (0–100%).
  * The gold dashed diagonal is perfect calibration; magenta stars are the user's
- * bins (sized by sample count) that spring-settle onto/away from the diagonal.
+ * bins (sized by sample count). When the chart scrolls into view, the diagonal and
+ * the constellation links DRAW themselves on, then the user's stars spring-settle
+ * down onto (or away from) the perfect-calibration line. This is the signature.
  */
 export function ConstellationCurve({
   bins,
@@ -24,6 +27,8 @@ export function ConstellationCurve({
 
   const xScale = (conf01: number) => L + ((conf01 - 0.5) / 0.5) * (R - L)
   const yScale = (acc01: number) => B - acc01 * (B - T)
+  const dist = (x1: number, y1: number, x2: number, y2: number) =>
+    Math.hypot(x2 - x1, y2 - y1)
 
   const stable = n >= minForStable
   const remaining = Math.max(0, minForStable - n)
@@ -36,16 +41,49 @@ export function ConstellationCurve({
     return { bin, cx, cyActual, cyDiag, dy: cyDiag - cyActual, r }
   })
 
+  // draw-in once the chart enters the viewport
+  const ref = useRef<HTMLDivElement>(null)
+  const [inView, setInView] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (typeof IntersectionObserver === 'undefined') {
+      setInView(true)
+      return
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setInView(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.3 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  const diagX1 = xScale(0.5)
+  const diagY1 = yScale(0.5)
+  const diagX2 = xScale(1)
+  const diagY2 = yScale(1)
+  const diagLen = dist(diagX1, diagY1, diagX2, diagY2)
+
+  // timing: diagonal draws first, links chase it, then stars settle
+  const linkStart = 0.55
+  const starStart = 0.95
+
   return (
-    <div className="relative">
+    <div ref={ref}>
       <svg
         viewBox="0 0 410 300"
-        className="w-full"
+        className={`w-full ${inView ? 'cv-in' : ''}`}
         role="img"
         aria-label="Calibration curve: stated confidence versus actual accuracy"
       >
         {/* frame */}
-        <rect x={L} y={T} width={R - L} height={B - T} fill="rgba(20,26,68,0.45)" rx="6" />
+        <rect x={L} y={T} width={R - L} height={B - T} fill="rgba(14,17,48,0.55)" rx="6" />
 
         {/* grid */}
         {[50, 60, 70, 80, 90, 100].map((c) => (
@@ -64,7 +102,7 @@ export function ConstellationCurve({
               y={B + 16}
               textAnchor="middle"
               className="fill-[var(--ivory-faint)]"
-              style={{ fontSize: 9, fontFamily: 'var(--font-sans)' }}
+              style={{ fontSize: 9, fontFamily: 'var(--font-mono)' }}
             >
               {c}
             </text>
@@ -86,22 +124,24 @@ export function ConstellationCurve({
               y={yScale(a / 100) + 3}
               textAnchor="end"
               className="fill-[var(--ivory-faint)]"
-              style={{ fontSize: 9, fontFamily: 'var(--font-sans)' }}
+              style={{ fontSize: 9, fontFamily: 'var(--font-mono)' }}
             >
               {a}
             </text>
           </g>
         ))}
 
-        {/* perfect-calibration diagonal */}
+        {/* perfect-calibration diagonal — draws itself first */}
         <line
-          x1={xScale(0.5)}
-          y1={yScale(0.5)}
-          x2={xScale(1)}
-          y2={yScale(1)}
+          className="cv-draw"
+          style={{ ['--len' as string]: diagLen, ['--d' as string]: '0.15s' }}
+          x1={diagX1}
+          y1={diagY1}
+          x2={diagX2}
+          y2={diagY2}
           stroke="var(--gold)"
           strokeWidth="1.4"
-          strokeDasharray="5 4"
+          strokeDasharray={`${diagLen}`}
           opacity="0.85"
         />
         <text
@@ -109,42 +149,54 @@ export function ConstellationCurve({
           y={yScale(0.74) - 7}
           transform={`rotate(-26 ${xScale(0.74)} ${yScale(0.74)})`}
           className="fill-[var(--gold)]"
-          style={{ fontSize: 8.5, letterSpacing: '0.12em', fontFamily: 'var(--font-sans)' }}
+          style={{ fontSize: 8, letterSpacing: '0.14em', fontFamily: 'var(--font-mono)' }}
         >
           PERFECT CALIBRATION
         </text>
 
-        {/* constellation links between consecutive bins */}
+        {/* constellation links between consecutive bins — chase the diagonal */}
         {points.length > 1 &&
           points.map((p, i) => {
             if (i === 0) return null
             const prev = points[i - 1]
+            const len = dist(prev.cx, prev.cyActual, p.cx, p.cyActual)
             return (
               <line
                 key={`link-${i}`}
+                className="cv-draw"
+                style={{
+                  ['--len' as string]: len,
+                  ['--d' as string]: `${linkStart + (i - 1) * 0.12}s`,
+                }}
                 x1={prev.cx}
                 y1={prev.cyActual}
                 x2={p.cx}
                 y2={p.cyActual}
                 stroke="var(--magenta)"
-                strokeWidth="0.9"
-                opacity="0.32"
+                strokeWidth="1"
+                strokeDasharray={`${len}`}
+                opacity="0.4"
               />
             )
           })}
 
-        {/* the user's stars */}
+        {/* the user's stars — spring-settle onto the curve */}
         {points.map((p, i) => (
           <g
             key={`pt-${p.bin.lo}`}
-            className="settle pulse-glow"
+            className="cv-star"
             style={
-              { '--dy': `${p.dy}px`, animationDelay: `${i * 110}ms` } as React.CSSProperties
+              {
+                '--dy': `${p.dy}px`,
+                '--d': `${starStart + i * 0.12}s`,
+              } as React.CSSProperties
             }
           >
-            <circle cx={p.cx} cy={p.cyActual} r={p.r + 3} fill="var(--magenta)" opacity="0.16" />
-            <circle cx={p.cx} cy={p.cyActual} r={p.r} fill="var(--magenta)" />
-            <circle cx={p.cx} cy={p.cyActual} r={p.r * 0.4} fill="#fff3f8" opacity="0.9" />
+            <g className="pulse-glow">
+              <circle cx={p.cx} cy={p.cyActual} r={p.r + 3} fill="var(--magenta)" opacity="0.16" />
+              <circle cx={p.cx} cy={p.cyActual} r={p.r} fill="var(--magenta)" />
+              <circle cx={p.cx} cy={p.cyActual} r={p.r * 0.4} fill="#fff3f8" opacity="0.9" />
+            </g>
           </g>
         ))}
 
@@ -154,7 +206,7 @@ export function ConstellationCurve({
           y={296}
           textAnchor="middle"
           className="fill-[var(--ivory-soft)]"
-          style={{ fontSize: 9.5, letterSpacing: '0.14em', fontFamily: 'var(--font-sans)' }}
+          style={{ fontSize: 8.5, letterSpacing: '0.18em', fontFamily: 'var(--font-mono)' }}
         >
           YOU SAID (% SURE)
         </text>
@@ -164,7 +216,7 @@ export function ConstellationCurve({
           textAnchor="middle"
           transform={`rotate(-90 14 ${(T + B) / 2})`}
           className="fill-[var(--ivory-soft)]"
-          style={{ fontSize: 9.5, letterSpacing: '0.14em', fontFamily: 'var(--font-sans)' }}
+          style={{ fontSize: 8.5, letterSpacing: '0.18em', fontFamily: 'var(--font-mono)' }}
         >
           YOU WERE RIGHT (%)
         </text>

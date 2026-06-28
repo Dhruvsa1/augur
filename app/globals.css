@@ -1,22 +1,25 @@
 @import "tailwindcss";
 
 /*
-  Augur — "celestial almanac / risograph star-chart"
-  Deep midnight-indigo ground, aged-ivory text, one luminous gold accent,
-  a magenta "you" marker. Spectral display serif + Hanken Grotesk for data.
-  Fonts loaded via next/font in layout.tsx.
+  Augur — "the living star-chart / the oracle"
+  A drifting nebula video grounds the page; aged-ivory type floats above it.
+  One luminous gold accent (the reading) and a magenta "you" marker.
+  Display: Spectral (high-contrast serif). UI: Schibsted Grotesk.
+  Instrument numerals: Space Mono (used only for data readouts & axes).
+  Fonts loaded via next/font in layout.tsx. The signature element is the
+  calibration constellation, which draws itself in when scrolled into view.
 */
 
 :root {
-  --void: #090a1a;          /* deepest ground */
+  --void: #070814;          /* deepest ground (behind video) */
   --indigo: #0e1130;        /* midnight indigo */
   --indigo-2: #141a44;      /* raised panel */
   --indigo-3: #1c2356;      /* hover / border-bright */
   --line: #2a3168;          /* hairlines */
 
   --ivory: #ece2c8;         /* aged ivory text */
-  --ivory-soft: #b7b196;    /* secondary */
-  --ivory-faint: #76799b;   /* tertiary / muted blue-grey */
+  --ivory-soft: #c4bda1;    /* secondary */
+  --ivory-faint: #8589ab;   /* tertiary / muted blue-grey */
 
   --gold: #e7b24c;          /* luminous accent */
   --gold-soft: #c79433;
@@ -44,7 +47,8 @@
   --color-bad: var(--bad);
 
   --font-display: var(--font-spectral);
-  --font-sans: var(--font-hanken);
+  --font-sans: var(--font-grotesk);
+  --font-mono: var(--font-mono-space);
 }
 
 @layer base {
@@ -56,29 +60,6 @@
     background-color: var(--void);
     color: var(--ivory);
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-    /* a faint starfield: two layered radial fogs + sparse dots */
-    background-image:
-      radial-gradient(circle at 18% -8%, rgba(231, 178, 76, 0.10), transparent 42%),
-      radial-gradient(circle at 92% 4%, rgba(232, 91, 156, 0.08), transparent 38%),
-      radial-gradient(circle at 50% 120%, rgba(28, 35, 86, 0.55), transparent 55%);
-    background-attachment: fixed;
-  }
-  /* star speckle overlay */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image:
-      radial-gradient(1px 1px at 20% 30%, rgba(236, 226, 200, 0.7), transparent),
-      radial-gradient(1px 1px at 75% 18%, rgba(236, 226, 200, 0.5), transparent),
-      radial-gradient(1px 1px at 40% 70%, rgba(236, 226, 200, 0.45), transparent),
-      radial-gradient(1px 1px at 88% 62%, rgba(236, 226, 200, 0.5), transparent),
-      radial-gradient(1px 1px at 12% 88%, rgba(236, 226, 200, 0.4), transparent),
-      radial-gradient(1.4px 1.4px at 62% 44%, rgba(231, 178, 76, 0.55), transparent),
-      radial-gradient(1px 1px at 32% 12%, rgba(236, 226, 200, 0.4), transparent);
-    opacity: 0.6;
   }
   ::selection {
     background: rgba(231, 178, 76, 0.28);
@@ -89,18 +70,62 @@
     font-weight: 500;
     letter-spacing: -0.01em;
   }
+  /* keyboard quality floor — visible focus everywhere */
+  :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
-/* staggered page-load reveal */
+/* ── the living nebula ground ────────────────────────────────────────────── */
+.bg-stage {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: var(--void);
+  pointer-events: none;
+}
+.bg-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* let the indigo palette unify the footage */
+  filter: saturate(1.05) contrast(1.02);
+  transform: scale(1.04); /* hide any seam at the edges */
+}
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(130% 80% at 50% -15%, rgba(231, 178, 76, 0.10), transparent 55%),
+    radial-gradient(120% 90% at 85% 8%, rgba(232, 91, 156, 0.08), transparent 45%),
+    radial-gradient(150% 120% at 50% 120%, rgba(7, 8, 20, 0.92), transparent 62%),
+    linear-gradient(180deg, rgba(7, 8, 20, 0.62), rgba(7, 8, 20, 0.34) 38%, rgba(7, 8, 20, 0.74));
+}
+
+/* mono instrument numerals */
+.num {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.02em;
+}
+
+/* ── motion ──────────────────────────────────────────────────────────────── */
 @keyframes rise {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.rise { animation: rise 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.rise { animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
 /* the constellation point spring-settle: starts offset by --dy, springs to rest */
 @keyframes settle {
-  0% { opacity: 0; transform: translateY(var(--dy, 0px)); }
+  0% { opacity: 0; transform: translateY(var(--dy, 12px)); }
   60% { opacity: 1; }
   100% { opacity: 1; transform: translateY(0); }
 }
@@ -126,8 +151,32 @@
 .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
 .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
 
+/* ── the signature: constellation draws itself in when scrolled into view ──── */
+@keyframes cvDraw {
+  from { stroke-dashoffset: var(--len, 400); opacity: 1; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+.cv-draw {
+  stroke-dasharray: var(--len, 400);
+  stroke-dashoffset: var(--len, 400);
+  opacity: 0;
+}
+.cv-in .cv-draw {
+  animation: cvDraw 1s ease-out var(--d, 0s) forwards;
+}
+/* the user's stars hold offset, then spring onto the curve once it's drawn */
+.cv-star { opacity: 0; }
+.cv-in .cv-star {
+  animation: settle 1.05s cubic-bezier(0.16, 1.04, 0.3, 1) var(--d, 0s) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .rise, .settle, .twinkle, .pulse-glow, .thinking-dot { animation: none; }
+  .rise, .settle, .twinkle, .pulse-glow, .thinking-dot,
+  .cv-in .cv-draw, .cv-in .cv-star {
+    animation: none;
+  }
+  .cv-draw { stroke-dashoffset: 0; opacity: 1; }
+  .cv-star { opacity: 1; }
 }
 
 /* ── confidence slider (the hero interaction) ───────────────────────────── */
@@ -156,9 +205,10 @@
   border: 2px solid var(--void);
   box-shadow: 0 0 0 1px var(--gold-soft), 0 0 14px rgba(231, 178, 76, 0.7);
   cursor: pointer;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
 }
-.conf-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
+.conf-slider::-webkit-slider-thumb:hover { transform: scale(1.08); }
+.conf-slider::-webkit-slider-thumb:active { transform: scale(1.18); }
 .conf-slider::-moz-range-thumb {
   width: 26px;
   height: 26px;

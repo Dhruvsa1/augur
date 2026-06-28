@@ -130,7 +130,7 @@ export function LiveMode({ owner }: { owner: string }) {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       {/* composer */}
-      <div className="rise rounded-2xl border border-line bg-indigo-2/55 p-6">
+      <div className="rise rounded-2xl border border-line bg-indigo-2/70 backdrop-blur-md p-6">
         <h2 className="font-display text-xl text-ivory">Log a real prediction</h2>
         <p className="mt-1 text-sm text-ivory-soft">
           Write it however you think it. Augur turns it into something you can resolve later —
@@ -284,7 +284,7 @@ export function LiveMode({ owner }: { owner: string }) {
               >
                 <StatusDot status={p.status} />
                 <span className="min-w-0 flex-1 truncate text-sm text-ivory-soft">{p.claim}</span>
-                <span className="shrink-0 text-xs text-ivory-faint tabular-nums">
+                <span className="num shrink-0 text-xs text-ivory-faint">
                   {p.confidence}%{p.brier != null ? ` · Brier ${Number(p.brier).toFixed(2)}` : ''}
                 </span>
               </div>
@@ -356,10 +356,10 @@ function OpenCard({
     p.resolves_on && new Date(p.resolves_on) <= new Date() ? 'due now' : p.resolves_on ?? 'no date'
 
   return (
-    <div className="rounded-xl border border-line bg-indigo-2/55 p-4">
+    <div className="rounded-xl border border-line bg-indigo-2/70 backdrop-blur-md p-4">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm text-ivory">{p.claim}</p>
-        <span className="shrink-0 rounded-full bg-gold/15 px-2 py-0.5 text-xs font-medium text-gold">
+        <span className="num shrink-0 rounded-full bg-gold/15 px-2 py-0.5 text-xs font-bold text-gold">
           {p.confidence}%
         </span>
       </div>
